@@ -42,22 +42,24 @@ func main() {
 
 	tasks := []string{task1, task2, task3, task4}
 
-	for _, t := range tasks {
+	for i, t := range tasks {
+
+		fmt.Printf("\n\n ### TASK %v ### \n\n", i)
 
 		fmt.Printf("Beginne: %v mit Modell %v\n", t, "llama3:8b")
 		start := time.Now()
 		useLstd(t)
-		fmt.Printf("Abgeschlossen in: %v s\n\n", time.Since(start).Seconds())
+		fmt.Printf("\nAbgeschlossen in: %v s\n\n", time.Since(start).Seconds())
 
 		fmt.Printf("Beginne: %v mit Modell %v\n", t, "deepseek-r1:8b")
 		start = time.Now()
 		useTiefSuch(t)
-		fmt.Printf("Abgeschlossen in: %v s\n\n", time.Since(start).Seconds())
+		fmt.Printf("\nAbgeschlossen in: %v s\n\n", time.Since(start).Seconds())
 
 		fmt.Printf("Beginne: %v mit Modell %v\n", t, "llama3:8b mit Plan")
 		start = time.Now()
 		useStdMitPlan(t)
-		fmt.Printf("Abgeschlossen in: %v s\n\n", time.Since(start).Seconds())
+		fmt.Printf("\nAbgeschlossen in: %v s\n\n", time.Since(start).Seconds())
 
 	}
 
@@ -185,5 +187,5 @@ func init() {
 	instead list all steps that are needed in detail to get to the correct solution.`
 
 	solveP = `You are a genious solver and critic thinker.
-	Solve the taks by using the thinking steps above, but question them critically to ensure a correct answer.`
+	Solve the taks by using the thinking steps above, but question them critically, respond only with the correct answer.`
 }
