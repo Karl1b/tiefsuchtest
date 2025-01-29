@@ -38,23 +38,27 @@ func main() {
 
 	task3 := `How many times does the letter R appear in the word "strawberry"?` // 3
 
-	task4 := `Explain classes in python using the example of cars. Show a code example with it!`
+	task4 := `Peter has got three apples. Maurice eats 5 bananas, then Peter gives Maurice 2 apples. How many apples does Peter have?` // 1
 
 	tasks := []string{task1, task2, task3, task4}
 
 	for i, t := range tasks {
 
-		fmt.Printf("\n\n ### TASK %v ### \n\n", i)
+		fmt.Printf("\n\n ### TASK %v ### \n\n", i+1)
 
 		fmt.Printf("Beginne: %v mit Modell %v\n", t, "llama3:8b")
 		start := time.Now()
 		useLstd(t)
 		fmt.Printf("\nAbgeschlossen in: %v s\n\n", time.Since(start).Seconds())
 
+		fmt.Printf("\n\n ### \n\n")
+
 		fmt.Printf("Beginne: %v mit Modell %v\n", t, "deepseek-r1:8b")
 		start = time.Now()
 		useTiefSuch(t)
 		fmt.Printf("\nAbgeschlossen in: %v s\n\n", time.Since(start).Seconds())
+
+		fmt.Printf("\n\n ### \n\n")
 
 		fmt.Printf("Beginne: %v mit Modell %v\n", t, "llama3:8b mit Plan")
 		start = time.Now()
@@ -68,7 +72,7 @@ func main() {
 func useStdMitPlan(task string) {
 
 	newTask := fmt.Sprintf("%s \n %s", thinkP, task)
-	result, err := callOllama(newTask, "llama3:8b", 0.7)
+	result, err := callOllama(newTask, "llama3:8b", 0.2)
 	if err != nil {
 		fmt.Printf("Error with llama3:8b: %v\n", err)
 		return
@@ -77,18 +81,27 @@ func useStdMitPlan(task string) {
 
 	solveTask := fmt.Sprintf("%s \n This is the Plan: %s \n This is the actual task:\n %s", solveP, result, task)
 
-	result, err = callOllama(solveTask, "llama3:8b", 0.7)
+	result, err = callOllama(solveTask, "llama3:8b", 0.2)
 	if err != nil {
 		fmt.Printf("Error with llama3:8b: %v\n", err)
 		return
 	}
-	fmt.Printf("llama3:8b FINAL Response: %s\n", result)
+	fmt.Printf("llama3:8b First Response: %s\n", result)
+
+	questionTask := fmt.Sprintf("\nThis was the TASK: %s \n This is the PROPOSED ANSWER:\n %s \n %s", task, result, questionP)
+
+	result, err = callOllama(questionTask, "llama3:8b", 0.2)
+	if err != nil {
+		fmt.Printf("Error with llama3:8b: %v\n", err)
+		return
+	}
+	fmt.Printf("\n llama3:8b FINAL RETHINKED Response: %s\n", result)
 
 }
 
 func useLstd(task string) {
 
-	result, err := callOllama(task, "llama3:8b", 0.7)
+	result, err := callOllama(task, "llama3:8b", 0.2)
 	if err != nil {
 		fmt.Printf("Error with llama3:8b: %v\n", err)
 		return
@@ -99,7 +112,7 @@ func useLstd(task string) {
 
 func useTiefSuch(task string) {
 
-	result, err := callOllama(task, "deepseek-r1:8b", 0.7)
+	result, err := callOllama(task, "deepseek-r1:8b", 0.2)
 	if err != nil {
 		fmt.Printf("Error with deepseek-r1:8b: %v\n", err)
 		return
@@ -179,6 +192,7 @@ func callOllama(prompt, model string, temp float32) (string, error) {
 
 var thinkP string
 var solveP string
+var questionP string
 
 func init() {
 
@@ -186,6 +200,9 @@ func init() {
 	Do not solve the task provided,
 	instead list all steps that are needed in detail to get to the correct solution.`
 
-	solveP = `You are a genious solver and critic thinker.
-	Solve the taks by using the thinking steps above, but question them critically, respond only with the correct answer.`
+	solveP = `You are a genious solver.
+	Solve the taks by using the thinking steps above respond ONLY with the correct short answer.`
+
+	questionP = `You are critical qualitiy control. Check if the PROPOSED ANSWER is correct for the TASK, rethink!
+	then respond ONLY with the correct short answer.`
 }
